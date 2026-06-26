@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Извинение перед друзьями</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,12 +29,26 @@ canvas#particles {
 }
 
 .glass {
-  background: rgba(20, 20, 35, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(20, 20, 35, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .glass {
+    background: rgba(20, 20, 35, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+@media (min-width: 1024px) {
+  @supports (backdrop-filter: blur(16px)) {
+    .glass {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  }
 }
 
 .screen {
@@ -45,8 +59,9 @@ canvas#particles {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
   padding: 20px;
+  will-change: opacity, transform;
 }
 
 .screen.hidden {
@@ -74,8 +89,8 @@ canvas#particles {
 }
 
 @keyframes glowPulse {
-  0%, 100% { text-shadow: 0 0 20px rgba(0, 200, 255, 0.2); }
-  50% { text-shadow: 0 0 40px rgba(0, 200, 255, 0.5), 0 0 80px rgba(0, 200, 255, 0.2); }
+  0%, 100% { text-shadow: 0 0 15px rgba(0, 200, 255, 0.15); }
+  50% { text-shadow: 0 0 25px rgba(0, 200, 255, 0.3); }
 }
 
 .profile-cards {
@@ -91,38 +106,32 @@ canvas#particles {
   border-radius: 20px;
   padding: 40px 48px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   flex: 1;
   min-width: 200px;
   max-width: 300px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .profile-card::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(from 0deg, transparent, rgba(0, 200, 255, 0.1), transparent, rgba(255, 100, 200, 0.1), transparent);
-  animation: rotateGlow 6s linear infinite;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,200,255,0.08), transparent 40%, rgba(255,100,200,0.08));
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.3s;
+  border-radius: 18px;
 }
 
 .profile-card:hover::before { opacity: 1; }
 
-@keyframes rotateGlow {
-  to { transform: rotate(360deg); }
-}
-
 .profile-card:hover {
-  transform: translateY(-8px) scale(1.04);
+  transform: translateY(-6px) scale(1.03);
   border-color: rgba(0, 200, 255, 0.4);
-  box-shadow: 0 12px 60px rgba(0, 200, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 200, 255, 0.15);
 }
 
 .profile-card .emoji {
@@ -154,6 +163,7 @@ canvas#particles {
   max-width: 720px;
   max-height: 90vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
   padding: 48px 40px;
   text-align: center;
@@ -289,16 +299,22 @@ canvas#particles {
 .profile-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 
 /* Mobile */
-@media (max-width: 600px) {
-  .welcome-content { padding: 32px 20px; }
-  .profile-content { padding: 32px 20px; }
-  .profile-card { padding: 28px 24px; min-width: 140px; }
-  .profile-card .emoji { font-size: 48px; }
+@media (max-width: 768px) {
+  .profile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 200, 255, 0.1);
+  }
 }
-
+@media (max-width: 600px) {
+  .welcome-content { padding: 28px 16px; }
+  .profile-content { padding: 28px 16px; }
+  .profile-card { padding: 24px 20px; min-width: 130px; }
+  .profile-card .emoji { font-size: 40px; }
+  .btn-main { padding: 14px 24px; }
+}
 @media (max-width: 400px) {
   .profile-cards { flex-direction: column; align-items: center; }
-  .profile-card { max-width: 240px; width: 100%; }
+  .profile-card { max-width: 220px; width: 100%; }
 }
 </style>
 </head>
@@ -358,6 +374,8 @@ canvas#particles {
 const pCanvas = document.getElementById('particles');
 const pCtx = pCanvas.getContext('2d');
 let particles = [];
+const isMobile = window.innerWidth < 768;
+const PARTICLE_COUNT = isMobile ? 25 : 60;
 
 function resizeParticles() {
   pCanvas.width = window.innerWidth;
@@ -371,47 +389,41 @@ class Particle {
   reset() {
     this.x = Math.random() * pCanvas.width;
     this.y = -10;
-    this.size = Math.random() * 3 + 1.5;
-    this.speedY = Math.random() * 0.5 + 0.15;
-    this.speedX = (Math.random() - 0.5) * 0.3;
-    this.opacity = Math.random() * 0.6 + 0.2;
+    this.size = Math.random() * 2 + 1.5;
+    this.speedY = Math.random() * 0.4 + 0.2;
+    this.speedX = (Math.random() - 0.5) * 0.2;
+    this.alpha = Math.random() * 0.4 + 0.15;
     this.color = ['#00c8ff', '#ff64c8', '#ffd700', '#7cfc00'][Math.floor(Math.random() * 4)];
-    this.life = 0;
-    this.maxLife = Math.random() * 600 + 400;
   }
   update() {
     this.y += this.speedY;
     this.x += this.speedX;
-    this.life++;
-    if (this.y > pCanvas.height + 10 || this.life > this.maxLife) this.reset();
+    if (this.y > pCanvas.height + 10) this.reset();
   }
   draw() {
-    pCtx.save();
-    pCtx.globalAlpha = this.opacity * Math.min(1, this.life / 100);
+    pCtx.globalAlpha = this.alpha;
     pCtx.fillStyle = this.color;
-    pCtx.shadowColor = this.color;
-    pCtx.shadowBlur = 6;
     const s = this.size;
     pCtx.fillRect(this.x - s/2, this.y - s/2, s, s);
-    pCtx.restore();
+    pCtx.globalAlpha = 1;
   }
 }
 
 function initParticles() {
   resizeParticles();
   particles = [];
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
     const p = new Particle();
     p.y = Math.random() * pCanvas.height;
-    p.life = Math.random() * p.maxLife;
     particles.push(p);
   }
 }
 
+let particlesRAF;
 function animateParticles() {
   pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
   for (const p of particles) { p.update(); p.draw(); }
-  requestAnimationFrame(animateParticles);
+  particlesRAF = requestAnimationFrame(animateParticles);
 }
 
 window.addEventListener('resize', resizeParticles);
@@ -474,9 +486,7 @@ class ConfettiPiece {
     confCtx.translate(this.x, this.y);
     confCtx.rotate(this.rotation * Math.PI / 180);
     confCtx.fillStyle = this.color;
-    confCtx.shadowColor = this.color;
-    confCtx.shadowBlur = 8;
-    const s = this.size;
+      const s = this.size;
     confCtx.fillRect(-s/2, -s/2, s, s);
     confCtx.restore();
   }
@@ -484,7 +494,8 @@ class ConfettiPiece {
 
 function startConfetti() {
   confettiPieces = [];
-  for (let i = 0; i < 200; i++) {
+  const count = isMobile ? 80 : 200;
+  for (let i = 0; i < count; i++) {
     confettiPieces.push(new ConfettiPiece());
   }
   confettiRunning = true;
@@ -554,8 +565,6 @@ function drawPixelHeart(ctx, cx, cy, size, beat) {
         gradient.addColorStop(0.5, '#ff2266');
         gradient.addColorStop(1, '#cc0044');
         ctx.fillStyle = gradient;
-        ctx.shadowColor = '#ff2266';
-        ctx.shadowBlur = 12;
         ctx.fillRect(x, y, px, px);
       }
     }
@@ -572,7 +581,8 @@ function animateHeart() {
   const size = Math.min(heartCanvas.width, heartCanvas.height) * 0.16;
 
   // Draw multiple hearts fading out
-  for (let i = 0; i < 12; i++) {
+  const heartEchoes = isMobile ? 5 : 12;
+  for (let i = 0; i < heartEchoes; i++) {
     const offset = i * 5;
     const t = heartTime - offset;
     if (t < 0) continue;
