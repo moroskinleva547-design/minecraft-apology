@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>РР·РІРёРЅРµРЅРёРµ РїРµСЂРµРґ РґСЂСѓР·СЊСЏРјРё</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0a0a12;
+  color: #e0e0e0;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glass {
+  background: rgba(20, 20, 35, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+}
+
+.screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  padding: 20px;
+}
+
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96);
+}
+
+/* Welcome Screen */
+.welcome-content {
+  text-align: center;
+  max-width: 720px;
+  width: 100%;
+  padding: 48px 40px;
+}
+
+.welcome-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(14px, 3vw, 24px);
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(0, 200, 255, 0.2); }
+  50% { text-shadow: 0 0 40px rgba(0, 200, 255, 0.5), 0 0 80px rgba(0, 200, 255, 0.2); }
+}
+
+.profile-cards {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px 48px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(0, 200, 255, 0.1), transparent, rgba(255, 100, 200, 0.1), transparent);
+  animation: rotateGlow 6s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.profile-card:hover::before { opacity: 1; }
+
+@keyframes rotateGlow {
+  to { transform: rotate(360deg); }
+}
+
+.profile-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  border-color: rgba(0, 200, 255, 0.4);
+  box-shadow: 0 12px 60px rgba(0, 200, 255, 0.2);
+}
+
+.profile-card .emoji {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card .name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(12px, 1.5vw, 16px);
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card .sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Profile Screens */
+.profile-content {
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+  padding: 48px 40px;
+  text-align: center;
+  position: relative;
+}
+
+.profile-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(12px, 2.5vw, 20px);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  color: #fff;
+  animation: fadeSlideDown 0.8s ease;
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-text {
+  font-size: clamp(14px, 1.1vw, 17px);
+  line-height: 1.8;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 32px;
+  text-align: left;
+  animation: fadeIn 1s ease 0.3s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.btn-main {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 1.2vw, 14px);
+  padding: 18px 40px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-main::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-main:hover::after { opacity: 1; }
+
+.btn-main:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.btn-main:active { transform: translateY(0); }
+
+.btn-gordey {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.btn-sasha {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.btn-back {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: color 0.3s;
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-back:hover { color: rgba(255,255,255,0.8); }
+
+.pixel {
+  image-rendering: pixelated;
+}
+
+.forgive-message {
+  margin-top: 24px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(8px, 1vw, 12px);
+  color: #ffd700;
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  display: none;
+}
+
+.forgive-message.show { display: block; }
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Confetti Canvas */
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Heart Canvas */
+#heart-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Scrollbar */
+.profile-content::-webkit-scrollbar { width: 6px; }
+.profile-content::-webkit-scrollbar-track { background: transparent; }
+.profile-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .welcome-content { padding: 32px 20px; }
+  .profile-content { padding: 32px 20px; }
+  .profile-card { padding: 28px 24px; min-width: 140px; }
+  .profile-card .emoji { font-size: 48px; }
+}
+
+@media (max-width: 400px) {
+  .profile-cards { flex-direction: column; align-items: center; }
+  .profile-card { max-width: 240px; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<canvas id="confetti-canvas"></canvas>
+<canvas id="heart-canvas"></canvas>
+
+<!-- Welcome Screen -->
+<div id="welcome-screen" class="screen">
+  <div class="glass welcome-content">
+    <div class="welcome-title">РљС‚Рѕ С‚С‹?<br>Р’С‹Р±РµСЂРё СЃРІРѕР№ РїСЂРѕС„РёР»СЊ:</div>
+    <div class="profile-cards">
+      <div class="profile-card" onclick="showProfile('gordey')">
+        <span class="emoji">рџ›ЎпёЏ</span>
+        <div class="name">РЇ Р“РѕСЂРґРµР№</div>
+        <div class="sub">РІРѕРёРЅ СЃРїСЂР°РІРµРґР»РёРІРѕСЃС‚Рё</div>
+      </div>
+      <div class="profile-card" onclick="showProfile('sasha')">
+        <span class="emoji">вљ”пёЏ</span>
+        <div class="name">РЇ РЎР°С€Р°</div>
+        <div class="sub">РєРѕСЂРѕР»СЊ РґСЂР°РјС‹</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gordey Screen -->
+<div id="gordey-screen" class="screen hidden">
+  <div class="glass profile-content">
+    <div class="profile-title">РџСЂРёРІРµС‚, РґСЂСѓРі Р“РѕСЂРґРµР№! рџ’”</div>
+    <div class="profile-text">
+      Р“РѕСЂРґРµР№, С‚С‹ РѕР±РёРґРµР»СЃСЏ РЅР° РјРµРЅСЏ Р·Р° РєРѕРјРїР°РЅРёСЋ, РЅРѕ РґР°РІР°Р№ СЂР°Р·Р±РµСЂРµРјСЃСЏ РІ СЃРёС‚СѓР°С†РёРё! Р’Рѕ-РїРµСЂРІС‹С…, СЏ РЅРµ СѓР±РёРІР°Р» С‚РµР±СЏ. Р’Рѕ-РІС‚РѕСЂС‹С…, СЏ РќР• Р»РѕРјР°Р» РІР°С€ РґРѕРј, СЌС‚Рѕ СЃС‚РѕРїСЂРѕС†РµРЅС‚РЅР°СЏ РєР»РµРІРµС‚Р°, СЏ Р±С‹ РЅРёРєРѕРіРґР° С‚Р°Рє РЅРµ РїРѕСЃС‚СѓРїРёР»! Р§С‚Рѕ РїСЂРѕРёР·РѕС€Р»Рѕ РЅР° СЃР°РјРѕРј РґРµР»Рµ: РЎР°С€Р° СЃР°Рј СѓРјРѕР»СЏР» РјРµРЅСЏ СѓР±РёС‚СЊ РµРіРѕ РїРµСЂСЃРѕРЅР°Р¶Р°. РЇ РїСЂРѕСЃС‚Рѕ РІС‹РїРѕР»РЅРёР» РµРіРѕ РїСЂРѕСЃСЊР±Сѓ. РќРѕ РїРѕСЃР»Рµ СЌС‚РѕРіРѕ РµРіРѕ СЃРѕР±Р°РєРё СЃРѕС€Р»Рё СЃ СѓРјР° Рё СЏСЂРѕСЃС‚РЅРѕ РЅР°РїР°Р»Рё РЅР° РјРµРЅСЏ. РњРЅРµ РїСЂРёС€Р»РѕСЃСЊ Р·Р°С‰РёС‰Р°С‚СЊСЃСЏ, Рё РѕРЅРё РїРѕРіРёР±Р»Рё. РҐРІР°С‚РёС‚ РґРµСЂР¶Р°С‚СЊ РЅР° РјРµРЅСЏ РѕР±РёРґСѓ РёР·-Р·Р° РіР»СѓРїРѕРіРѕ РЅРµРґРѕСЂР°Р·СѓРјРµРЅРёСЏ, РґР°РІР°Р№ РјРёСЂРёС‚СЊСЃСЏ!
+    </div>
+    <button class="btn-main btn-gordey" onclick="forgiveGordey()">Р“РѕСЂРґРµР№ РїСЂРѕС‰Р°РµС‚</button>
+    <div class="forgive-message" id="gordey-msg">Р“РѕСЂРґРµР№ РІСЃС‘ РїРѕРЅСЏР» Рё Р±РѕР»СЊС€Рµ РЅРµ РѕР±РёР¶Р°РµС‚СЃСЏ! рџ¤ќ</div>
+    <button class="btn-back" onclick="goBack()">в†ђ РќР°Р·Р°Рґ Рє РІС‹Р±РѕСЂСѓ</button>
+  </div>
+</div>
+
+<!-- Sasha Screen -->
+<div id="sasha-screen" class="screen hidden">
+  <div class="glass profile-content">
+    <div class="profile-title">РџСЂРёРІРµС‚, РґСЂСѓРі РЎР°С€Р°! вљ”пёЏ</div>
+    <div class="profile-text">
+      РЎР°С€Р°, РЅСѓ С‚С‹ Рё СѓСЃС‚СЂРѕРёР» Р·Р°РІР°СЂСѓС…Сѓ! РўС‹ СЃР°Рј Р»РёС‡РЅРѕ РїРѕРїСЂРѕСЃРёР» РјРµРЅСЏ С‚РµР±СЏ СѓР±РёС‚СЊ вЂ” СЏ РїСЂРѕСЃС‚Рѕ РІС‹РїРѕР»РЅРёР» С‚РІРѕСЋ РїСЂРѕСЃСЊР±Сѓ. РќРѕ РїРѕС‡РµРјСѓ С‚РІРѕРё СЃРѕР±Р°РєРё РїРѕСЃР»Рµ СЌС‚РѕРіРѕ РЅР°Р±СЂРѕСЃРёР»РёСЃСЊ РЅР° РјРµРЅСЏ? РњРЅРµ РїСЂРёС€Р»РѕСЃСЊ РѕС‚Р±РёРІР°С‚СЊСЃСЏ СЂР°РґРё РІС‹Р¶РёРІР°РЅРёСЏ, СЏ РЅРµ С…РѕС‚РµР» РёС… СѓР±РёРІР°С‚СЊ! Р СЃР°РјРѕРµ РіР»Р°РІРЅРѕРµ: СЏ РЅРµ С‚СЂРѕРіР°Р» Рё РЅРµ Р»РѕРјР°Р» РІР°С€ РґРѕРј, РєС‚Рѕ-С‚Рѕ Р¶РµСЃС‚РєРѕ РЅР°СЃ РїРѕРґСЃС‚Р°РІРёР». Р’ РёС‚РѕРіРµ РІС‹ РѕР±Р° РЅР° РјРµРЅСЏ РѕР±РёРґРµР»РёСЃСЊ, С…РѕС‚СЏ СЏ РІРѕРѕР±С‰Рµ РЅРµ РІРёРЅРѕРІР°С‚. РҐРІР°С‚РёС‚ РґСѓС‚СЊСЃСЏ, РјС‹ Р¶Рµ Р±Р°РЅРґР°. Р–РґСѓ РІ РґРёСЃРєРѕСЂРґРµ!
+    </div>
+    <button class="btn-main btn-sasha" onclick="forgiveSasha()">РЎР°С€Р° Р¶РјРµС‚ СЂСѓРєСѓ</button>
+    <div class="forgive-message" id="sasha-msg">РљРѕРЅС„Р»РёРєС‚ СѓР»Р°Р¶РµРЅ! рџ‘‘</div>
+    <button class="btn-back" onclick="goBack()">в†ђ РќР°Р·Р°Рґ Рє РІС‹Р±РѕСЂСѓ</button>
+  </div>
+</div>
+
+<script>
+// ---- Background Particles ----
+const pCanvas = document.getElementById('particles');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+
+function resizeParticles() {
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * pCanvas.width;
+    this.y = -10;
+    this.size = Math.random() * 3 + 1.5;
+    this.speedY = Math.random() * 0.5 + 0.15;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.6 + 0.2;
+    this.color = ['#00c8ff', '#ff64c8', '#ffd700', '#7cfc00'][Math.floor(Math.random() * 4)];
+    this.life = 0;
+    this.maxLife = Math.random() * 600 + 400;
+  }
+  update() {
+    this.y += this.speedY;
+    this.x += this.speedX;
+    this.life++;
+    if (this.y > pCanvas.height + 10 || this.life > this.maxLife) this.reset();
+  }
+  draw() {
+    pCtx.save();
+    pCtx.globalAlpha = this.opacity * Math.min(1, this.life / 100);
+    pCtx.fillStyle = this.color;
+    pCtx.shadowColor = this.color;
+    pCtx.shadowBlur = 6;
+    const s = this.size;
+    pCtx.fillRect(this.x - s/2, this.y - s/2, s, s);
+    pCtx.restore();
+  }
+}
+
+function initParticles() {
+  resizeParticles();
+  particles = [];
+  for (let i = 0; i < 80; i++) {
+    const p = new Particle();
+    p.y = Math.random() * pCanvas.height;
+    p.life = Math.random() * p.maxLife;
+    particles.push(p);
+  }
+}
+
+function animateParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  for (const p of particles) { p.update(); p.draw(); }
+  requestAnimationFrame(animateParticles);
+}
+
+window.addEventListener('resize', resizeParticles);
+initParticles();
+animateParticles();
+
+// ---- Screen Navigation ----
+function showProfile(name) {
+  document.getElementById('welcome-screen').classList.add('hidden');
+  if (name === 'gordey') {
+    document.getElementById('gordey-screen').classList.remove('hidden');
+  } else {
+    document.getElementById('sasha-screen').classList.remove('hidden');
+  }
+  // reset forgive messages
+  document.getElementById('gordey-msg').classList.remove('show');
+  document.getElementById('sasha-msg').classList.remove('show');
+}
+
+function goBack() {
+  document.getElementById('gordey-screen').classList.add('hidden');
+  document.getElementById('sasha-screen').classList.add('hidden');
+  document.getElementById('welcome-screen').classList.remove('hidden');
+  document.getElementById('gordey-msg').classList.remove('show');
+  document.getElementById('sasha-msg').classList.remove('show');
+}
+
+// ---- Confetti (for Gordey) ----
+const confettiCanvas = document.getElementById('confetti-canvas');
+const confCtx = confettiCanvas.getContext('2d');
+let confettiPieces = [];
+let confettiRunning = false;
+
+function resizeConfetti() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+resizeConfetti();
+window.addEventListener('resize', resizeConfetti);
+
+class ConfettiPiece {
+  constructor() {
+    this.x = Math.random() * confettiCanvas.width;
+    this.y = -10;
+    this.size = Math.random() * 6 + 3;
+    this.speedY = Math.random() * 3 + 2;
+    this.speedX = (Math.random() - 0.5) * 4;
+    this.color = ['#ff0','#f0f','#0ff','#f00','#0f0','#00f','#ff8800','#fff'][Math.floor(Math.random()*8)];
+    this.rotation = Math.random() * 360;
+    this.rotSpeed = (Math.random() - 0.5) * 10;
+  }
+  update() {
+    this.y += this.speedY;
+    this.x += this.speedX;
+    this.speedY += 0.05;
+    this.rotation += this.rotSpeed;
+  }
+  draw() {
+    confCtx.save();
+    confCtx.translate(this.x, this.y);
+    confCtx.rotate(this.rotation * Math.PI / 180);
+    confCtx.fillStyle = this.color;
+    confCtx.shadowColor = this.color;
+    confCtx.shadowBlur = 8;
+    const s = this.size;
+    confCtx.fillRect(-s/2, -s/2, s, s);
+    confCtx.restore();
+  }
+}
+
+function startConfetti() {
+  confettiPieces = [];
+  for (let i = 0; i < 200; i++) {
+    confettiPieces.push(new ConfettiPiece());
+  }
+  confettiRunning = true;
+  animateConfetti();
+}
+
+function animateConfetti() {
+  if (!confettiRunning) return;
+  confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  let alive = 0;
+  for (const p of confettiPieces) {
+    p.update();
+    p.draw();
+    if (p.y < confettiCanvas.height + 50) alive++;
+  }
+  if (alive > 0) {
+    requestAnimationFrame(animateConfetti);
+  } else {
+    confettiRunning = false;
+    confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  }
+}
+
+// ---- Beating Heart (for Sasha) ----
+const heartCanvas = document.getElementById('heart-canvas');
+const heartCtx = heartCanvas.getContext('2d');
+let heartRunning = false;
+let heartTime = 0;
+
+function resizeHeart() {
+  heartCanvas.width = window.innerWidth;
+  heartCanvas.height = window.innerHeight;
+}
+resizeHeart();
+window.addEventListener('resize', resizeHeart);
+
+function startHeart() {
+  heartTime = 0;
+  heartRunning = true;
+  animateHeart();
+}
+
+function drawPixelHeart(ctx, cx, cy, size, beat) {
+  const s = size * (1 + 0.15 * Math.sin(beat * 0.4));
+  const pixel = Math.max(3, s / 12);
+  const heartShape = [
+    [0,1,1,0,0, 0,0,1,1,0],
+    [1,1,1,1,0, 0,1,1,1,1],
+    [1,1,1,1,1, 1,1,1,1,1],
+    [0,1,1,1,1, 1,1,1,1,0],
+    [0,0,1,1,1, 1,1,1,0,0],
+    [0,0,0,1,1, 1,1,0,0,0],
+    [0,0,0,0,1, 1,0,0,0,0],
+  ];
+
+  const w = heartShape[0].length;
+  const h = heartShape.length;
+
+  for (let row = 0; row < h; row++) {
+    for (let col = 0; col < w; col++) {
+      if (heartShape[row][col]) {
+        const x = cx + (col - w/2) * pixel;
+        const y = cy + (row - h/2) * pixel;
+        const px = Math.ceil(pixel);
+        const gradient = ctx.createRadialGradient(x + px/2, y + px/2, 0, x + px/2, y + px/2, px);
+        gradient.addColorStop(0, '#ff4477');
+        gradient.addColorStop(0.5, '#ff2266');
+        gradient.addColorStop(1, '#cc0044');
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = '#ff2266';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(x, y, px, px);
+      }
+    }
+  }
+}
+
+function animateHeart() {
+  if (!heartRunning) return;
+  heartTime++;
+  heartCtx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+
+  const cx = heartCanvas.width / 2;
+  const cy = heartCanvas.height / 2;
+  const size = Math.min(heartCanvas.width, heartCanvas.height) * 0.16;
+
+  // Draw multiple hearts fading out
+  for (let i = 0; i < 12; i++) {
+    const offset = i * 5;
+    const t = heartTime - offset;
+    if (t < 0) continue;
+    const life = Math.max(0, 1 - t / 80);
+    if (life <= 0) continue;
+    heartCtx.save();
+    heartCtx.globalAlpha = life * 0.5;
+    const scale = 1 + (1 - life) * 2;
+    heartCtx.translate(cx, cy);
+    heartCtx.scale(scale, scale);
+    heartCtx.translate(-cx, -cy);
+    drawPixelHeart(heartCtx, cx, cy, size, t);
+    heartCtx.restore();
+  }
+
+  // Main heart
+  drawPixelHeart(heartCtx, cx, cy, size, heartTime);
+
+  if (heartTime < 120) {
+    requestAnimationFrame(animateHeart);
+  } else {
+    heartRunning = false;
+    heartCtx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+  }
+}
+
+// ---- Forgive Handlers ----
+function forgiveGordey() {
+  document.getElementById('gordey-msg').classList.add('show');
+  startConfetti();
+}
+
+function forgiveSasha() {
+  document.getElementById('sasha-msg').classList.add('show');
+  startHeart();
+}
+</script>
+</body>
+</html>
